@@ -1,0 +1,109 @@
+on conda prompt
+
+$ conda create -n algorithms_transparency python=3.9
+$ conda activate algorithms_transparency
+
+
+pip install pandas==1.1.5
+pip install matplotlib==3.5.3
+pip install tensorflow
+pip install joblib==1.2.0 
+pip install seaborn==0.12.2
+
+conda install pytorch torchvision torchaudio cpuonly -c pytorch # did not work
+
+Collecting package metadata (current_repodata.json): failed
+
+CondaSSLError: OpenSSL appears to be unavailable on this machine. OpenSSL is required to
+download and install packages.
+
+Exception: HTTPSConnectionPool(host='conda.anaconda.org', port=443): Max retries exceeded with url: /pytorch/win-64/current_repodata.json (Caused by SSLError("Can't connect to HTTPS URL because the SSL module is not available."))
+
+
+$ conda list openssl
+# Name                    Version                   Build  Channel
+openssl                   3.4.0                h2466b09_0    conda-forge
+
+$ conda deactivate
+(base)
+$ conda list openssl
+# Name                    Version                   Build  Channel
+openssl                   1.1.1q               h2bbff1b_0
+pyopenssl                 22.0.0             pyhd3eb1b0_0
+
+$ conda update conda
+
+added anaconda3/scripts to the path env variable
+
+$ conda install -c anaconda ca-certificates
+
+$ conda update -n base -c conda-forge conda
+
+closed conda prompt
+
+$ conda config --get ssl_verify
+--set ssl_verify True
+
+$ conda activate algorithms_transparency
+
+$ conda install pytorch torchvision torchaudio cpuonly -c pytorch
+
+Collecting package metadata (current_repodata.json): failed
+
+CondaSSLError: Encountered an SSL error. Most likely a certificate verification issue.
+
+Exception: HTTPSConnectionPool(host='conda.anaconda.org', port=443): Max retries exceeded with url: /pytorch/win-64/current_repodata.json (Caused by SSLError("Can't connect to HTTPS URL because the SSL module is not available."))
+
+
+
+$ pip install recbole # $ conda install -c aibox recbole did not go through
+
+
+# so that environment show in jupyter kernel
+$ pip install ipykernel
+$ python -m ipykernel install --user --name algorithms_transparency --display-name "algorithms_transparency recbole"
+
+
+$ pip install ray==2.6.3
+$ pip install -U ipywidgets
+$ pip install -U numpy
+$ pip install hyperopt==0.2.5
+
+all the following modules are installed
+torch>=1.10.0
+numpy>=1.17.2
+scipy>=1.6.0
+hyperopt==0.2.5
+pandas>=1.3.0
+tqdm>=4.48.2
+scikit_learn>=0.23.2
+pyyaml>=5.1.0
+colorlog>=4.7.2
+colorama>=0.4.4
+tensorboard>=2.5.0
+thop>=0.1.1.post2207130030
+ray>=1.13.0, <=2.6.3
+tabulate>=0.8.10 
+plotly>=4.0.0
+texttable>=0.9.0
+psutil>=5.9.0
+
+
+
+from recbole.quick_start import run_recbole
+
+run_recbole(model='BPR', dataset='ml-100k')
+
+yields error
+AttributeError: module 'numpy' has no attribute 'bool8'
+
+
+downgrade numpy to 1.23.5
+$ pip install --upgrade numpy==1.23.5
+
+tensorflow-intel 2.18.0 requires numpy<2.1.0,>=1.26.0, but you have numpy 1.23.5 which is incompatible.
+
+downgrade tensorflow
+$ pip install --upgrade tensorflow==2.15.0
+
+$pip install kmeans_pytorch 

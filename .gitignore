@@ -1,0 +1,26 @@
+processed_datasets/
+meetings/
+notebooks/processed_datasets/
+notebooks/log/
+notebooks/log_tensorboard/
+
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
