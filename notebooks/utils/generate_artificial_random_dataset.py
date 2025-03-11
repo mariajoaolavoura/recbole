@@ -9,7 +9,6 @@ import pickle
 # import sys
 # sys.path.append(os.path.abspath('') + '/..')
 
-
 def validate_folderpath(folderpath):
     # print('im validating')
     if not os.path.exists(folderpath):

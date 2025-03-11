@@ -1,4 +1,4 @@
-from .recbole_train_test import get_test_data_sections, get_evaluation_results_filename
+from .recbole_train_test import get_test_full_data_sections, get_test_data_sections, get_evaluation_results_filename
 from .generate_artificial_random_dataset import load_picklefile
 
 
@@ -41,7 +41,8 @@ def get_results_matrix(model_name,
                        save_path, 
                        metric='recall@3', 
                        filename_version='',
-                       part_shift_incl=True):
+                       part_shift_incl=True,
+                       test_full_data_sec=False):
     '''
         model_versions: list ['_pt1', '_pt2', '_pt3', '']
 
@@ -96,9 +97,12 @@ def get_results_matrix(model_name,
         df.loc[row_idx,row_idx] = test_recall_diagonal
 
 
-        
-        test_data_sections = get_test_data_sections(model_version=model_ver,
-                                                    models_versions=models_versions) 
+        if test_full_data_sec:
+            test_data_sections = get_test_full_data_sections(model_version=model_ver,
+                                                        models_versions=models_versions) 
+        else:
+            test_data_sections = get_test_data_sections(model_version=model_ver,
+                                                        models_versions=models_versions) 
         test_data_sections = test_data_sections if part_shift_incl else test_data_sections[:-1]
 
         

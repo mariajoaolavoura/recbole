@@ -518,6 +518,50 @@ def get_test_data_sections_with_names(model_version:str,
     return [base_dataset_name+datasec for datasec in test_datasec]
 
 
+
+def get_test_full_data_sections(model_version:str, 
+                            models_versions=['_pt1', '_pt2', '_pt3', '']):
+    """
+        model_version:str ['_pt1', '_pt2', '_pt3', '']
+
+        freq=3 # 3 month
+        duration = 2*12//freq # 2 years split in 3M buckets
+        n_parts = duration*2+1
+
+            Dataset section parts
+                |    part 8    |
+        |part 1|part 5| part 6|part 7|
+        |    part 2   |
+        |         part 3      |
+        |             ''             |
+    """
+    
+    # duration = len(models_versions)
+    # n_parts = duration*2+1
+    # triangle_holdouts = [models_versions[0]]+['_pt'+str(i) for i in range(duration+1, n_parts)]
+
+    for i, pt in enumerate(models_versions):
+        if model_version==pt:
+            return models_versions[:i]+models_versions[i+1:]+['_pt8']
+    
+
+def get_test_full_data_sections_with_names(model_version:str, 
+                                      base_dataset_name:str,
+                                      models_versions=['_pt1', '_pt2', '_pt3', '']):
+    """
+        model_version:str ['_pt1', '_pt2', '_pt3', '']
+            Dataset section parts
+                |    part 8    |
+        |part 1|part 5| part 6|part 7|
+        |    part 2   |
+        |         part 3      |
+        |             ''             |
+    """    
+    test_datasec = get_test_full_data_sections(model_version, models_versions)
+
+    return [base_dataset_name+datasec for datasec in test_datasec]
+
+
 # def get_test_data_sections_with_names(model_version:str, base_dataset_name:str):
 #     """
 #         model_version:str ['_pt1', '_pt2', '_pt3', '']
