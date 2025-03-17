@@ -34,7 +34,6 @@ def recall_heatmap(df,
         plt.show()
 
 
-
 def get_results_matrix(model_name,
                        models_versions, 
                        base_dataset_name, 
@@ -76,6 +75,8 @@ def get_results_matrix(model_name,
             1: pt2
             2: pt3
             3: '' (full, pt4)
+
+        part_shift_incl: bool if True: includes pt8 in matrix plot
 
     '''
 

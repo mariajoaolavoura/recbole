@@ -53,6 +53,231 @@ def setup_config_and_dataset(model_name,
     return config, logger, dataset, train_data, valid_data, test_data
 
 
+
+def train(config, model, train_data, valid_data, parameter_dict, filename_version=''):
+    # trainer loading and initialization
+    trainer = Trainer(config, model)
+
+    # model training
+    best_valid_score, best_valid_result = trainer.fit(train_data, valid_data)
+    print('\n\nTraining best results')
+    print('best_valid_score: ', best_valid_score)
+    print('best_valid_result: ', best_valid_result)
+
+
+
+def recbole_train_bpr(model_name,
+                      dataset_name,
+                      parameter_dict,
+                      filename_version=''):
+    
+    '''
+        Example:
+
+        K = 3
+        VALID_METRIC = 'Recall@'+str(K)
+        MODEL = 'BPR'
+        SEED = 2020
+        USE_GPU = False
+        SHUFFLE = False 
+        SHOW_PROGRESS = False
+
+        base_filename = 'sudden_drift_dataset_all_users_start_i1i5_drift_all_parts'
+        base_dataset_name = base_filename+'_4000x7_0.71'
+        dataset_name=base_dataset_name+'_pt1'
+        
+        data_path = 'processed_datasets/artificial_data/'
+        
+        parameter_dict = {  'dataset': dataset_name+'.inter',
+                            'data_path': data_path,
+                            'load_col': {'inter': ['user_id', 'item_id']},
+                            'use_gpu':USE_GPU,
+                            'topk':K,
+                            'valid_metric':VALID_METRIC,
+                            'checkpoint_dir':data_path+dataset_name,
+                            'seed':SEED,
+                            'shuffle': SHUFFLE
+                        }    
+    '''
+
+    config,\
+        logger,\
+            dataset,\
+                train_data,\
+                    valid_data,\
+                        test_data = setup_config_and_dataset(model_name,
+                                                             dataset_name,
+                                                             parameter_dict)
+
+
+    # model loading and initialization
+    model = BPR(config, train_data.dataset).to(config['device'])
+    logger.info(model)
+
+    train(config, model, train_data, valid_data, parameter_dict, filename_version)
+
+
+def recbole_train_pop(model_name,
+                      dataset_name,
+                      parameter_dict,
+                      filename_version=''):
+    
+    '''
+        Example:
+
+        K = 3
+        VALID_METRIC = 'Recall@'+str(K)
+        MODEL = 'BPR'
+        SEED = 2020
+        USE_GPU = False
+        SHUFFLE = False 
+        SHOW_PROGRESS = False
+
+        base_filename = 'sudden_drift_dataset_all_users_start_i1i5_drift_all_parts'
+        base_dataset_name = base_filename+'_4000x7_0.71'
+        dataset_name=base_dataset_name+'_pt1'
+        
+        data_path = 'processed_datasets/artificial_data/'
+        
+        parameter_dict = {  'dataset': dataset_name+'.inter',
+                            'data_path': data_path,
+                            'load_col': {'inter': ['user_id', 'item_id']},
+                            'use_gpu':USE_GPU,
+                            'topk':K,
+                            'valid_metric':VALID_METRIC,
+                            'checkpoint_dir':data_path+dataset_name,
+                            'seed':SEED,
+                            'shuffle': SHUFFLE
+                        }
+
+    
+    '''
+
+    config,\
+        logger,\
+            dataset,\
+                train_data,\
+                    valid_data,\
+                        test_data = setup_config_and_dataset(model_name,
+                                                             dataset_name,
+                                                             parameter_dict)
+
+
+    # model loading and initialization
+    model = Pop(config, train_data.dataset).to(config['device'])
+    logger.info(model)
+
+    train(config, model, train_data, valid_data, parameter_dict, filename_version)
+
+
+def recbole_train_itemknn(model_name,
+                          dataset_name,
+                          parameter_dict,
+                          filename_version=''):
+    
+    '''
+        Example:
+
+        K = 3
+        VALID_METRIC = 'Recall@'+str(K)
+        MODEL = 'BPR'
+        SEED = 2020
+        USE_GPU = False
+        SHUFFLE = False 
+        SHOW_PROGRESS = False
+
+        base_filename = 'sudden_drift_dataset_all_users_start_i1i5_drift_all_parts'
+        base_dataset_name = base_filename+'_4000x7_0.71'
+        dataset_name=base_dataset_name+'_pt1'
+        
+        data_path = 'processed_datasets/artificial_data/'
+        
+        parameter_dict = {  'dataset': dataset_name+'.inter',
+                            'data_path': data_path,
+                            'load_col': {'inter': ['user_id', 'item_id']},
+                            'use_gpu':USE_GPU,
+                            'topk':K,
+                            'valid_metric':VALID_METRIC,
+                            'checkpoint_dir':data_path+dataset_name,
+                            'seed':SEED,
+                            'shuffle': SHUFFLE
+                        }
+
+    
+    '''
+
+    config,\
+        logger,\
+            dataset,\
+                train_data,\
+                    valid_data,\
+                        test_data = setup_config_and_dataset(model_name,
+                                                             dataset_name,
+                                                             parameter_dict)
+
+
+    # model loading and initialization
+    model = ItemKNN(config, train_data.dataset).to(config['device'])
+    logger.info(model)
+
+    train(config, model, train_data, valid_data, parameter_dict, filename_version)
+
+
+
+def recbole_train_neumf(model_name,
+                        dataset_name,
+                        parameter_dict,
+                        filename_version=''):
+    
+    '''
+        Example:
+
+        K = 3
+        VALID_METRIC = 'Recall@'+str(K)
+        MODEL = 'BPR'
+        SEED = 2020
+        USE_GPU = False
+        SHUFFLE = False 
+        SHOW_PROGRESS = False
+
+        base_filename = 'sudden_drift_dataset_all_users_start_i1i5_drift_all_parts'
+        base_dataset_name = base_filename+'_4000x7_0.71'
+        dataset_name=base_dataset_name+'_pt1'
+        
+        data_path = 'processed_datasets/artificial_data/'
+        
+        parameter_dict = {  'dataset': dataset_name+'.inter',
+                            'data_path': data_path,
+                            'load_col': {'inter': ['user_id', 'item_id']},
+                            'use_gpu':USE_GPU,
+                            'topk':K,
+                            'valid_metric':VALID_METRIC,
+                            'checkpoint_dir':data_path+dataset_name,
+                            'seed':SEED,
+                            'shuffle': SHUFFLE
+                        }
+
+    
+    '''
+
+    config,\
+        logger,\
+            dataset,\
+                train_data,\
+                    valid_data,\
+                        test_data = setup_config_and_dataset(model_name,
+                                                             dataset_name,
+                                                             parameter_dict)
+
+
+    # model loading and initialization
+    model = NeuMF(config, train_data.dataset).to(config['device'])
+    logger.info(model)
+
+    train(config, model, train_data, valid_data, parameter_dict, filename_version)
+
+
+
 def train_evaluate(config, model, train_data, valid_data, test_data, parameter_dict, filename_version=''):
     # trainer loading and initialization
     trainer = Trainer(config, model)
@@ -79,8 +304,6 @@ def train_evaluate(config, model, train_data, valid_data, test_data, parameter_d
     save_evaluation_results(test_result, 
                             parameter_dict['checkpoint_dir'], 
                             get_evaluation_results_filename(config['model'], None, 'diagonal', filename_version))
-
-
 
 def recbole_train_evaluate_bpr(model_name,
                            dataset_name,
@@ -274,7 +497,6 @@ def recbole_train_evaluate_neumf(model_name,
     logger.info(model)
 
     train_evaluate(config, model, train_data, valid_data, test_data, parameter_dict, filename_version)
-
 
 
 
@@ -503,7 +725,8 @@ def get_test_data_sections(model_version:str,
 
 def get_test_data_sections_with_names(model_version:str, 
                                       base_dataset_name:str,
-                                      models_versions=['_pt1', '_pt2', '_pt3', '']):
+                                      models_versions=['_pt1', '_pt2', '_pt3', ''],
+                                      pt1NoCS=None):
     """
         model_version:str ['_pt1', '_pt2', '_pt3', '']
             Dataset section parts
@@ -514,8 +737,12 @@ def get_test_data_sections_with_names(model_version:str,
         |             ''             |
     """    
     test_datasec = get_test_data_sections(model_version, models_versions)
+    test_datasec_with_names = [base_dataset_name+datasec for datasec in test_datasec]
 
-    return [base_dataset_name+datasec for datasec in test_datasec]
+    if pt1NoCS and model_version!='_pt1':
+        test_datasec_with_names = [base_dataset_name+'_'+pt1NoCS+'_pt1']+test_datasec_with_names[1:]
+
+    return test_datasec_with_names
 
 
 
