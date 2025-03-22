@@ -52,7 +52,19 @@ def setup_config_and_dataset(model_name,
 
     return config, logger, dataset, train_data, valid_data, test_data
 
+def evaluate(trainer, test_data):
+    # model evaluation
+    # test_result = trainer.evaluate(test_data)
+    # model evaluation
+    test_result = None
+    try:
+        test_result = trainer.evaluate(test_data)
+    except Exception as error:
+        # handle the exception
+        print("An exception occurred:", type(error).__name__)
+        test_result = OrderedDict([(trainer.valid_metric, -1)])
 
+    return test_result
 
 def train(config, model, train_data, valid_data, parameter_dict, filename_version=''):
     # trainer loading and initialization
@@ -63,6 +75,8 @@ def train(config, model, train_data, valid_data, parameter_dict, filename_versio
     print('\n\nTraining best results')
     print('best_valid_score: ', best_valid_score)
     print('best_valid_result: ', best_valid_result)
+
+    return trainer
 
 
 
@@ -114,7 +128,7 @@ def recbole_train_bpr(model_name,
     model = BPR(config, train_data.dataset).to(config['device'])
     logger.info(model)
 
-    train(config, model, train_data, valid_data, parameter_dict, filename_version)
+    return config, train(config, model, train_data, valid_data, parameter_dict, filename_version)
 
 
 def recbole_train_pop(model_name,
@@ -167,7 +181,7 @@ def recbole_train_pop(model_name,
     model = Pop(config, train_data.dataset).to(config['device'])
     logger.info(model)
 
-    train(config, model, train_data, valid_data, parameter_dict, filename_version)
+    return config, train(config, model, train_data, valid_data, parameter_dict, filename_version)
 
 
 def recbole_train_itemknn(model_name,
@@ -220,7 +234,7 @@ def recbole_train_itemknn(model_name,
     model = ItemKNN(config, train_data.dataset).to(config['device'])
     logger.info(model)
 
-    train(config, model, train_data, valid_data, parameter_dict, filename_version)
+    return config, train(config, model, train_data, valid_data, parameter_dict, filename_version)
 
 
 
@@ -274,7 +288,7 @@ def recbole_train_neumf(model_name,
     model = NeuMF(config, train_data.dataset).to(config['device'])
     logger.info(model)
 
-    train(config, model, train_data, valid_data, parameter_dict, filename_version)
+    return config, train(config, model, train_data, valid_data, parameter_dict, filename_version)
 
 
 
