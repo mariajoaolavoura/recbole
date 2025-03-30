@@ -33,6 +33,29 @@ def create_folderpath(save_path, base_filename, specs_str):
     return save_path+base_filename+'_'+specs_str+'/'
 
 
+def save_dataframe_2_atomic_file(df, save_path, base_filename, specs_str, benchmark_filename):
+    if save_path:
+        folderpath = create_folderpath(save_path, base_filename, specs_str)
+        validate_folderpath(folderpath)
+        # print(folderpath)
+        # Output the dataset
+        filename = base_filename+'_'+specs_str+'.'+benchmark_filename
+        filepath = folderpath+filename
+        # print(filepath)
+        df = df[['user_id', 'item_id', 'timestamp']]
+        # print(df.head())
+
+
+        df.to_csv(filepath+'.csv', index=False)
+        df.to_csv(filepath+'.inter',
+                            header=['user_id:token','item_id:token','timestamp:float'], 
+                            sep='\t', 
+                            index=False)
+        print("Dataset saved at "+folderpath+", named "+filename+", in .csv and .inter")
+        # print(df.item_id.value_counts())
+
+
+# older version of save_dataframe_2_atomic_file
 def save_complete_dataset_atomic_file(df, save_path, base_filename, specs_str):
     if save_path:
         folderpath = create_folderpath(save_path, base_filename, specs_str)

@@ -2,6 +2,7 @@
 import os
 from logging import getLogger
 from time import time
+import datetime
 
 import numpy as np
 import torch
@@ -12,6 +13,8 @@ from recbole.trainer import Trainer
 # from recbole.data.interaction import Interaction
 from recbole.data.dataloader import FullSortEvalDataLoader
 # from recbole.evaluator import Evaluator, Collector
+
+from .generate_artificial_random_dataset import save_picklefile, validate_folderpath
 
 from recbole.utils import (
     early_stopping,
@@ -152,32 +155,32 @@ class CustomTrainer(Trainer):
     def _neg_sample_batch_eval(self, batched_data):
         interaction, row_idx, positive_u, positive_i = batched_data
         batch_size = interaction.length
-        print(type(batched_data), '<- IN CUSTOMTRAINER._neg_sample_batch_eval is batched_data a NegSampleEvalDataLoader or a Dataset?')
-        print(type(interaction), '<- IN CUSTOMTRAINER._neg_sample_batch_eval is interaction a NegSampleEvalDataLoader or a Dataset?')
+        # print(type(batched_data), '<- IN CUSTOMTRAINER._neg_sample_batch_eval is batched_data a NegSampleEvalDataLoader or a Dataset?')
+        # print(type(interaction), '<- IN CUSTOMTRAINER._neg_sample_batch_eval is interaction a NegSampleEvalDataLoader or a Dataset?')
         
         if batch_size <= self.test_batch_size:
             origin_scores = self.model.predict(interaction.to(self.device))
-            print('IN CUSTOMTRAINER._neg_sample_batch_eval USED model.predict')
+            # print('IN CUSTOMTRAINER._neg_sample_batch_eval USED model.predict')
         else:
             origin_scores = self._spilt_predict(interaction, batch_size)
-            print('IN CUSTOMTRAINER._neg_sample_batch_eval USED _spilt_predict')
+            # print('IN CUSTOMTRAINER._neg_sample_batch_eval USED _spilt_predict')
 
-        print('IN CUSTOMTRAINER._neg_sample_batch_eval origin_scores', origin_scores)
+        # print('IN CUSTOMTRAINER._neg_sample_batch_eval origin_scores', origin_scores)
 
         if self.config["eval_type"] == EvaluatorType.VALUE:
             return interaction, origin_scores, positive_u, positive_i
         elif self.config["eval_type"] == EvaluatorType.RANKING:
             col_idx = interaction[self.config["ITEM_ID_FIELD"]]
             batch_user_num = positive_u[-1] + 1
-            print('IN CUSTOMTRAINER._neg_sample_batch_eval batch_user_num=', batch_user_num, 'positive_u[-1]', positive_u[-1], 'positive_u size=', positive_u.size(), positive_u)
-            print('positive_i', positive_i,'size=', positive_i.size())
+            # print('IN CUSTOMTRAINER._neg_sample_batch_eval batch_user_num=', batch_user_num, 'positive_u[-1]', positive_u[-1], 'positive_u size=', positive_u.size(), positive_u)
+            # print('positive_i', positive_i,'size=', positive_i.size())
             scores = torch.full(
                 (batch_user_num, self.tot_item_num), -np.inf, device=self.device
             )
 
-            print('IN CUSTOMTRAINER._neg_sample_batch_eval row_idx=', row_idx, '(', len(row_idx), ')')
-            print('IN CUSTOMTRAINER._neg_sample_batch_eval col_idx=interaction[self.config["ITEM_ID_FIELD"]]', col_idx, '(', len(col_idx), ')')
-            print('IN CUSTOMTRAINER._neg_sample_batch_eval interaction[self.config["USER_ID_FIELD"]]', interaction[self.config["USER_ID_FIELD"]], '(', len(interaction[self.config["USER_ID_FIELD"]]), ')')
+            # print('IN CUSTOMTRAINER._neg_sample_batch_eval row_idx=', row_idx, '(', len(row_idx), ')')
+            # print('IN CUSTOMTRAINER._neg_sample_batch_eval col_idx=interaction[self.config["ITEM_ID_FIELD"]]', col_idx, '(', len(col_idx), ')')
+            # print('IN CUSTOMTRAINER._neg_sample_batch_eval interaction[self.config["USER_ID_FIELD"]]', interaction[self.config["USER_ID_FIELD"]], '(', len(interaction[self.config["USER_ID_FIELD"]]), ')')
             scores[row_idx, col_idx] = origin_scores
             return interaction, scores, positive_u, positive_i
         
@@ -235,18 +238,20 @@ class CustomTrainer(Trainer):
             else eval_data
         )
 
-        print(type(eval_data), '<- IN CUSTOMTRAINER.evaluate is eval_data a NegSampleEvalDataLoader or a Dataset?')
-        print(type(iter_data), '<- IN CUSTOMTRAINER.evaluate is iter_data a NegSampleEvalDataLoader or a Dataset?')
+        # print(type(eval_data), '<- IN CUSTOMTRAINER.evaluate is eval_data a NegSampleEvalDataLoader or a Dataset?')
+        # print(type(iter_data), '<- IN CUSTOMTRAINER.evaluate is iter_data a NegSampleEvalDataLoader or a Dataset?')
 
+        # self.external_ids_items_rec = []
         num_sample = 0
         for batch_idx, batched_data in enumerate(iter_data):
+            self.all_external_ids_items_rec = []
             num_sample += len(batched_data)
-            print('IN CUSTOMTRAINER.evaluate batch_idx=', batch_idx)
-            print('IN CUSTOMTRAINER.evaluate batched_data=', type(batched_data))
+            # print('IN CUSTOMTRAINER.evaluate batch_idx=', batch_idx)
+            # print('IN CUSTOMTRAINER.evaluate batched_data=', type(batched_data))
             interaction, scores, positive_u, positive_i = eval_func(batched_data)
-            print('IN CUSTOMTRAINER.evaluate interaction=', interaction)
+            # print('IN CUSTOMTRAINER.evaluate interaction=', interaction)
             # print('interaction=', interaction)
-            print('IN CUSTOMTRAINER.evaluate scores=', scores, 'size=', scores.size() ,'all -inf?', torch.all(scores == -np.inf))
+            # print('IN CUSTOMTRAINER.evaluate scores=', scores, 'size=', scores.size() ,'all -inf?', torch.all(scores == -np.inf))
             # print('IN CUSTOMTRAINER.evaluate positive_u=', positive_u,'positive_i=', positive_i)
             if self.gpu_available and show_progress:
                 iter_data.set_postfix_str(
@@ -258,19 +263,42 @@ class CustomTrainer(Trainer):
             self._eval_batch_collect(scores, interaction, positive_u, positive_i, eval_data)
 
 
+            try:
+                pti = self.config['dataset'][self.config['dataset'].rindex('pt'):]
+            except:
+                pti = 'none'
+
+            folder_path = self.config['checkpoint_dir']+'/'+'recommendations/'  
+            rec_filename = folder_path+\
+                            'RecExtItemIds_'+self.config['model']+\
+                                                            '_test_'+pti+\
+                                                                '_batch_'+str(batch_idx)+\
+                                                                    '_'+str(time())+'.pkl'
+                                                                    # '_'+str(datetime.datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S'))+'.pkl'
+                                                                    
+            validate_folderpath(folder_path)
+            save_picklefile(self.all_external_ids_items_rec, rec_filename)
+
+
+        # pti = self.config['dataset'][self.config['dataset'].rindex('pt'):]
+        # rec_filename = self.config['checkpoint_dir']+'/'+\
+        #                 'RecExtItemIds_'+self.config['model']+\
+        #                                                 '_test_'+pti+\
+        #                                                         '_'+str(time())+'.pkl'
+        # save_picklefile(self.external_ids_items_rec, rec_filename)
 
 
         self.eval_collector.model_collect(self.model)
         struct = self.eval_collector.get_data_struct()
         # print('struct keys=',struct.keys())
-        print('IN CUSTOMTRAINER.evaluate struct.topk=',struct['rec.topk'])
-        print('IN CUSTOMTRAINER.evaluate size=',struct['rec.topk'].size())
+        # print('IN CUSTOMTRAINER.evaluate struct.topk=',struct['rec.topk'])
+        # print('IN CUSTOMTRAINER.evaluate size=',struct['rec.topk'].size())
         # torch.save(struct['rec.topk'], 'C:/Users/mjlav/Desktop/work/european_comission/recbole/notebooks/processed_datasets/natural_data/palco2010/more_2interQ_df_no_drift_pt1/trainer_struct.pt')
         # print('struct.items=',struct['rec.items'])
         # print('struct.label=',struct['rec.label'])
         
         result = self.evaluator.evaluate(struct)
-        print('result=',result)
+        # print('result=',result)
         if not self.config["single_spec"]:
             result = self._map_reduce(result, num_sample)
         self.wandblogger.log_eval_metrics(result, head="eval")
@@ -286,26 +314,30 @@ class CustomTrainer(Trainer):
         ''' copy of the evaluator.collector.Collector.eval_batch_collect() with save of the topk file'''
 
         if self.eval_collector.register.need("rec.topk"):
-            # print('IN COLLECTOR.eval_batch_collect entered rec.topk')
+            # print('IN CUSTOMTRAINER.eval_batch_collect entered rec.topk')
             _, topk_idx = torch.topk(
                 scores_tensor, max(self.eval_collector.topk), dim=-1
             )  # n_users x k
 
-            print('IN CUSTOMTRAINER._eval_batch_collect id2token from topk_idx\n',
-                  eval_data._dataset.id2token(eval_data._dataset.iid_field,
-                                              topk_idx))
-            
-            print('is it yielding an error?', 
-                  eval_data._dataset.id2token(eval_data._dataset.iid_field,
-                                              [-1]))
-            # print('IN COLLECTOR.eval_batch_collect topk_idx=', topk_idx, '(', topk_idx.size(), ')')
+            # print('IN CUSTOMTRAINER._eval_batch_collect id2token from topk_idx\n',
+            #       eval_data.dataset.id2token(eval_data.dataset.iid_field,
+            #                                   topk_idx))
+            self.all_external_ids_items_rec = eval_data.dataset\
+                                                    .id2token(eval_data.dataset.iid_field,
+                                                              topk_idx)
+                                                              
+            # print('IN CUSTOMTRAINER._eval_batch_collect self.all_external_ids_items_rec=', self.all_external_ids_items_rec)
+            # print('is it yielding an error?', 
+            #       eval_data._dataset.id2token(eval_data._dataset.iid_field,
+            #                                   [-1]))
+            # print('IN CUSTOMTRAINER.eval_batch_collect topk_idx=', topk_idx, '(', topk_idx.size(), ')')
             # pos_matrix = torch.zeros_like(scores_tensor, dtype=torch.int)
             # pos_matrix[positive_u, positive_i] = 1
-            # print('IN COLLECTOR.eval_batch_collect pos_matrix=', pos_matrix, '(', pos_matrix.size(), ')', 'is all 0?', torch.all(pos_matrix == 0))
+            # print('IN CUSTOMTRAINER.eval_batch_collect pos_matrix=', pos_matrix, '(', pos_matrix.size(), ')', 'is all 0?', torch.all(pos_matrix == 0))
             # pos_len_list = pos_matrix.sum(dim=1, keepdim=True)
-            # print('IN COLLECTOR.eval_batch_collect pos_len_list=', pos_len_list, '(', pos_len_list.size(), ')')
+            # print('IN CUSTOMTRAINER.eval_batch_collect pos_len_list=', pos_len_list, '(', pos_len_list.size(), ')')
             # pos_idx = torch.gather(pos_matrix, dim=1, index=topk_idx)
-            # print('IN COLLECTOR.eval_batch_collect pos_idx=', pos_idx, '(', pos_idx.size(), ')')
+            # print('IN CUSTOMTRAINER.eval_batch_collect pos_idx=', pos_idx, '(', pos_idx.size(), ')')
             # result = torch.cat((pos_idx, pos_len_list), dim=1)
-            # print('IN COLLECTOR.eval_batch_collect torch.cat((pos_idx, pos_len_list), dim=1)=result=', result, '(', result.size(), ')')
+            # print('IN CUSTOMTRAINER.eval_batch_collect torch.cat((pos_idx, pos_len_list), dim=1)=result=', result, '(', result.size(), ')')
             # self.eval_collector.data_struct.update_tensor("rec.topk", result)

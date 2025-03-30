@@ -1,4 +1,5 @@
 from .generate_artificial_random_dataset import save_picklefile, validate_folderpath
+from .custom_trainer import *
 from logging import getLogger
 from recbole.config import Config
 from recbole.data import create_dataset, data_preparation
@@ -26,6 +27,34 @@ def save_evaluation_results(test_Results,
     save_picklefile(test_Results, folderpath+'/'+filename+'.pkl')
 
 
+def get_parameter_dict(dataset_name, state,  use_gpu, seed, save_path, save_dataset, show_progress, shuffle, eval_args,metrics, k, valid_metric):
+    return {
+        'dataset': dataset_name+'.inter',
+        'use_gpu':use_gpu,
+
+        ## Environment settings https://recbole.io/docs/user_guide/config/environment_settings.html
+        'seed':seed,
+        'state':state,
+        'data_path': save_path,
+        'save_dataset':save_dataset, #(bool): Whether or not to save filtered dataset. If True, save filtered dataset, otherwise it will not be saved. Defaults to False
+        'checkpoint_dir':save_path+dataset_name,
+        'show_progress': show_progress,
+        'shuffle': shuffle,
+
+        ## Data settings https://recbole.io/docs/user_guide/config/data_settings.html
+        'load_col': {'inter': ['user_id', 'item_id', 'timestamp']},
+        # 'user_inter_num_interval':'[1,inf)',
+        
+        ## Training settings https://recbole.io/docs/user_guide/config/training_settings.html
+        
+        ## Evaluation settings https://recbole.io/docs/user_guide/config/evaluation_settings.html
+        'eval_args': eval_args,
+        'metrics': metrics, #['Recall', 'MRR', 'NDCG', 'Hit', 'Precision'], # default
+        'topk':k,
+        'valid_metric':valid_metric          
+    }
+
+
 def setup_config_and_dataset(model_name,
                             dataset_name,
                             parameter_dict):
@@ -51,6 +80,243 @@ def setup_config_and_dataset(model_name,
     train_data, valid_data, test_data = data_preparation(config, dataset)
 
     return config, logger, dataset, train_data, valid_data, test_data
+
+
+def recbole_customtrain_bpr(model_name,
+                      dataset_name,
+                      parameter_dict,
+                      filename_version=''):
+    
+    '''
+        Example:
+
+        K = 3
+        VALID_METRIC = 'Recall@'+str(K)
+        MODEL = 'BPR'
+        SEED = 2020
+        USE_GPU = False
+        SHUFFLE = False 
+        SHOW_PROGRESS = False
+
+        base_filename = 'sudden_drift_dataset_all_users_start_i1i5_drift_all_parts'
+        base_dataset_name = base_filename+'_4000x7_0.71'
+        dataset_name=base_dataset_name+'_pt1'
+        
+        data_path = 'processed_datasets/artificial_data/'
+        
+        parameter_dict = {  'dataset': dataset_name+'.inter',
+                            'data_path': data_path,
+                            'load_col': {'inter': ['user_id', 'item_id']},
+                            'use_gpu':USE_GPU,
+                            'topk':K,
+                            'valid_metric':VALID_METRIC,
+                            'checkpoint_dir':data_path+dataset_name,
+                            'seed':SEED,
+                            'shuffle': SHUFFLE
+                        }    
+    '''
+
+    config,\
+        logger,\
+            dataset,\
+                train_data,\
+                    valid_data,\
+                        test_data = setup_config_and_dataset(model_name,
+                                                             dataset_name,
+                                                             parameter_dict)
+
+
+    # model loading and initialization
+    model = BPR(config, train_data.dataset).to(config['device'])
+    logger.info(model)
+
+    trainer = CustomTrainer(config, model)
+
+    # model training
+    best_valid_score, best_valid_result = trainer.fit(train_data, valid_data)
+    print('\n\nTraining best results')
+    print('best_valid_score: ', best_valid_score)
+    print('best_valid_result: ', best_valid_result)
+
+    return config, trainer
+
+
+def recbole_customtrain_pop(model_name,
+                      dataset_name,
+                      parameter_dict,
+                      filename_version=''):
+    
+    '''
+        Example:
+
+        K = 3
+        VALID_METRIC = 'Recall@'+str(K)
+        MODEL = 'BPR'
+        SEED = 2020
+        USE_GPU = False
+        SHUFFLE = False 
+        SHOW_PROGRESS = False
+
+        base_filename = 'sudden_drift_dataset_all_users_start_i1i5_drift_all_parts'
+        base_dataset_name = base_filename+'_4000x7_0.71'
+        dataset_name=base_dataset_name+'_pt1'
+        
+        data_path = 'processed_datasets/artificial_data/'
+        
+        parameter_dict = {  'dataset': dataset_name+'.inter',
+                            'data_path': data_path,
+                            'load_col': {'inter': ['user_id', 'item_id']},
+                            'use_gpu':USE_GPU,
+                            'topk':K,
+                            'valid_metric':VALID_METRIC,
+                            'checkpoint_dir':data_path+dataset_name,
+                            'seed':SEED,
+                            'shuffle': SHUFFLE
+                        }    
+    '''
+
+    config,\
+        logger,\
+            dataset,\
+                train_data,\
+                    valid_data,\
+                        test_data = setup_config_and_dataset(model_name,
+                                                             dataset_name,
+                                                             parameter_dict)
+
+
+    # model loading and initialization
+    model = Pop(config, train_data.dataset).to(config['device'])
+    logger.info(model)
+
+    trainer = CustomTrainer(config, model)
+
+    # model training
+    best_valid_score, best_valid_result = trainer.fit(train_data, valid_data)
+    print('\n\nTraining best results')
+    print('best_valid_score: ', best_valid_score)
+    print('best_valid_result: ', best_valid_result)
+
+    return config, trainer
+
+
+def recbole_customtrain_itemknn(model_name,
+                      dataset_name,
+                      parameter_dict,
+                      filename_version=''):
+    
+    '''
+        Example:
+
+        K = 3
+        VALID_METRIC = 'Recall@'+str(K)
+        MODEL = 'BPR'
+        SEED = 2020
+        USE_GPU = False
+        SHUFFLE = False 
+        SHOW_PROGRESS = False
+
+        base_filename = 'sudden_drift_dataset_all_users_start_i1i5_drift_all_parts'
+        base_dataset_name = base_filename+'_4000x7_0.71'
+        dataset_name=base_dataset_name+'_pt1'
+        
+        data_path = 'processed_datasets/artificial_data/'
+        
+        parameter_dict = {  'dataset': dataset_name+'.inter',
+                            'data_path': data_path,
+                            'load_col': {'inter': ['user_id', 'item_id']},
+                            'use_gpu':USE_GPU,
+                            'topk':K,
+                            'valid_metric':VALID_METRIC,
+                            'checkpoint_dir':data_path+dataset_name,
+                            'seed':SEED,
+                            'shuffle': SHUFFLE
+                        }    
+    '''
+
+    config,\
+        logger,\
+            dataset,\
+                train_data,\
+                    valid_data,\
+                        test_data = setup_config_and_dataset(model_name,
+                                                             dataset_name,
+                                                             parameter_dict)
+
+
+    # model loading and initialization
+    model = ItemKNN(config, train_data.dataset).to(config['device'])
+    logger.info(model)
+
+    trainer = CustomTrainer(config, model)
+
+    # model training
+    best_valid_score, best_valid_result = trainer.fit(train_data, valid_data)
+    print('\n\nTraining best results')
+    print('best_valid_score: ', best_valid_score)
+    print('best_valid_result: ', best_valid_result)
+
+    return config, trainer
+
+
+def recbole_customtrain_neumf(model_name,
+                      dataset_name,
+                      parameter_dict,
+                      filename_version=''):
+    
+    '''
+        Example:
+
+        K = 3
+        VALID_METRIC = 'Recall@'+str(K)
+        MODEL = 'BPR'
+        SEED = 2020
+        USE_GPU = False
+        SHUFFLE = False 
+        SHOW_PROGRESS = False
+
+        base_filename = 'sudden_drift_dataset_all_users_start_i1i5_drift_all_parts'
+        base_dataset_name = base_filename+'_4000x7_0.71'
+        dataset_name=base_dataset_name+'_pt1'
+        
+        data_path = 'processed_datasets/artificial_data/'
+        
+        parameter_dict = {  'dataset': dataset_name+'.inter',
+                            'data_path': data_path,
+                            'load_col': {'inter': ['user_id', 'item_id']},
+                            'use_gpu':USE_GPU,
+                            'topk':K,
+                            'valid_metric':VALID_METRIC,
+                            'checkpoint_dir':data_path+dataset_name,
+                            'seed':SEED,
+                            'shuffle': SHUFFLE
+                        }    
+    '''
+
+    config,\
+        logger,\
+            dataset,\
+                train_data,\
+                    valid_data,\
+                        test_data = setup_config_and_dataset(model_name,
+                                                             dataset_name,
+                                                             parameter_dict)
+
+
+    # model loading and initialization
+    model = NeuMF(config, train_data.dataset).to(config['device'])
+    logger.info(model)
+
+    trainer = CustomTrainer(config, model)
+
+    # model training
+    best_valid_score, best_valid_result = trainer.fit(train_data, valid_data)
+    print('\n\nTraining best results')
+    print('best_valid_score: ', best_valid_score)
+    print('best_valid_result: ', best_valid_result)
+
+    return config, trainer
+
 
 def evaluate(trainer, test_data):
     # model evaluation
