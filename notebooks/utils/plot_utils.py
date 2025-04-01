@@ -1,5 +1,5 @@
 from .recbole_train_test import get_test_full_data_sections, get_test_data_sections, get_evaluation_results_filename
-from .generate_artificial_random_dataset import load_picklefile
+from .generate_artificial_random_dataset import load_picklefile, validate_folderpath
 
 
 import pandas as pd
@@ -18,7 +18,8 @@ a4_dims = (11.7, 8.27)
 def recall_heatmap(df,
                    round_point=2,
                    title='Recall@20 for checkpoint models across Holdouts - model - data',
-                   filepath='images/heatmaps/..'):
+                   filepath='images/heatmaps/',
+                   filename='<base_dataset_name><FILENAME_VERSION>_<model_name>_<VALID_METRIC>'):
     
     # code from Measuring Forgetting  
     plt.figure(figsize=(15, 10))
@@ -29,7 +30,8 @@ def recall_heatmap(df,
     plt.xlabel('holdout')
     plt.title(title)
     if filepath:
-        plt.savefig(filepath);
+        validate_folderpath(filepath)
+        plt.savefig(filepath+filename);
     else:
         plt.show()
 
