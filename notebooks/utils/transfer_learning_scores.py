@@ -54,7 +54,7 @@ def compute_symmetric_BWT_rodrigues(results_matrix): # Díaz-Rodriguez et al. 20
 def compute_symmetric_BWT_rodrigues_three_main_diagonals(results_matrix): # Díaz-Rodriguez et al. 2018
     diff = []
     n_checkpoints = results_matrix.shape[0]
-    for j in range(0, n_checkpoints-1):
+    for j in range(1, n_checkpoints):
         i = j-1
         print(i,j)
         Rij = results_matrix.iloc[i,j] # get models performances' on previous holdouts
@@ -62,6 +62,7 @@ def compute_symmetric_BWT_rodrigues_three_main_diagonals(results_matrix): # Día
         print(Rij, Rjj)
         diff.append( Rij - Rjj ) # future models performances' - performances' of models closest to holdouts (diagonal)
         print(diff)
+    print(diff)
     BWT_symmetric = sum(diff) / ( n_checkpoints*(n_checkpoints-1) / 2 ) # store average BWT for model
     return BWT_symmetric, diff # return BWT and average BWT for all models
 
@@ -69,7 +70,7 @@ def compute_symmetric_BWT_rodrigues_three_main_diagonals(results_matrix): # Día
 def compute_BWT_rodrigues_three_main_diagonals(results_matrix): # Díaz-Rodriguez et al. 2018
     diff = []
     n_checkpoints = results_matrix.shape[0]
-    for j in range(1, n_checkpoints):
+    for j in range(0, n_checkpoints-1):
         i = j+1
         print(i,j)
         Rij = results_matrix.iloc[i,j] # get models performances' on previous holdouts
@@ -77,5 +78,6 @@ def compute_BWT_rodrigues_three_main_diagonals(results_matrix): # Díaz-Rodrigue
         print(Rij, Rjj)
         diff.append( Rij - Rjj ) # future models performances' - performances' of models closest to holdouts (diagonal)
         print(diff)
+    print(diff)
     BWT = sum(diff) / ( n_checkpoints*(n_checkpoints-1) / 2 ) # store average BWT for model
     return BWT, diff # return BWT and average BWT for all models
