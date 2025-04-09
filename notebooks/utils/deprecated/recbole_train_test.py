@@ -1,5 +1,6 @@
-from .generate_artificial_random_dataset import save_picklefile, validate_folderpath
-from .custom_trainer import *
+# from .generate_artificial_random_dataset import save_picklefile, validate_folderpath
+
+from ..custom_trainer import *
 from logging import getLogger
 from recbole.config import Config
 from recbole.data import create_dataset, data_preparation

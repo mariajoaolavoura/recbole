@@ -14,7 +14,9 @@ from recbole.trainer import Trainer
 from recbole.data.dataloader import FullSortEvalDataLoader
 # from recbole.evaluator import Evaluator, Collector
 
-from .generate_artificial_random_dataset import save_picklefile, validate_folderpath
+# from .generate_artificial_random_dataset import save_picklefile, validate_folderpath
+from .file_utils import save_picklefile, validate_folderpath
+
 
 from recbole.utils import (
     early_stopping,
