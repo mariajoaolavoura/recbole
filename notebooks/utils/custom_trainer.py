@@ -206,7 +206,7 @@ class CustomTrainer(Trainer):
             collections.OrderedDict: eval result, key is the eval metric and value in the corresponding metric value.
         """
         if not eval_data:
-            return
+            return        
 
         if load_best_model:
             checkpoint_file = model_file or self.saved_model_file
@@ -266,7 +266,7 @@ class CustomTrainer(Trainer):
 
 
             try:
-                pti = self.config['dataset'][self.config['dataset'].rindex('pt'):]
+                pti = eval_data.dataset.dataset_name[eval_data.dataset.dataset_name.rindex('pt'):]
             except:
                 pti = 'none'
 
@@ -277,7 +277,9 @@ class CustomTrainer(Trainer):
                                                                 '_batch_'+str(batch_idx)+\
                                                                     '_'+str(time())+'.pkl'
                                                                     # '_'+str(datetime.datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S'))+'.pkl'
-                                                                    
+             
+             
+            
             validate_folderpath(folder_path)
             save_picklefile(self.all_external_ids_items_rec, rec_filename)
 
