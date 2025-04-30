@@ -30,11 +30,11 @@ def get_folderpath_str(save_path, base_filename, specs_str):
 
 def get_evaluation_results_filename(model_name, model_part, section, filename_version=''):
     if section == 'diagonal' and model_part is None:
-        return model_name+'_evaluation_results_diagonal'+filename_version
+        return model_name+'_evalres_diagonal'+filename_version
     elif model_part[-3:][:2] == 'pt': 
-        return model_name+'_evaluation_results_model_'+model_part[-3:]+'_section_'+section[-3:]+filename_version
+        return model_name+'_evalres_model_'+model_part[-3:]+'_section_'+section[-3:]+filename_version
     else:
-        return model_name+'_evaluation_results_model_full_section_'+section[-3:]+filename_version
+        return model_name+'_evalres_model_full_section_'+section[-3:]+filename_version
 
 
 def get_test_full_data_sections(model_version:str, 
@@ -215,7 +215,7 @@ def recbole_train_each_eval_all(model_name,
 
     for part in model_versions_to_train:
         print('\n\n'+part)
-        
+
         # current data (ith part of the dataset) to feed the pre-trained model,
         # the result is referred to as "model part i" or "current model"
         current_dataset_name = base_dataset_name+part
@@ -237,7 +237,7 @@ def recbole_train_each_eval_all(model_name,
                             'load_col': {'inter': ['user_id', 'item_id', 'timestamp']},
                             # 'user_inter_num_interval':'[1,inf)',
                             'benchmark_filename': benchmark_filename,
-                            
+
                             ## Training settings https://recbole.io/docs/user_guide/config/training_settings.html
                             # 'train_neg_sample_args': TRAIN_NEG_SAMPLE_ARGS,
                             'knn_method':knn_method,
@@ -266,8 +266,8 @@ def recbole_train_each_eval_all(model_name,
 
         # trainer loading and initialization
         trainer = get_trainer(current_config['MODEL_TYPE'], current_config['model'])(current_config, current_model)
-        
-        
+
+
         # model training
         best_valid_score, best_valid_result = trainer.fit(current_train_data, current_valid_data)
         print('\n\nTraining best results')
@@ -276,7 +276,8 @@ def recbole_train_each_eval_all(model_name,
 
 
         # main diagonal eval
-        test_result = evaluate(trainer, current_test_data)
+        # test_result = evaluate_print_error_message(trainer, current_test_data)
+        test_result = trainer.evaluate(current_test_data)
         validate_and_save_picklefile(test_result,
                                     current_config['checkpoint_dir'], 
                                     get_evaluation_results_filename(current_config['model'], 
@@ -289,7 +290,7 @@ def recbole_train_each_eval_all(model_name,
         test_full_data_sections = get_test_full_data_sections_with_names(model_version=part,
                                                 base_dataset_name=base_dataset_name,
                                                 models_versions=model_versions_to_evaluate)
-        
+
         test_full_data_sections = test_full_data_sections if part_shift_incl else test_full_data_sections[:-1]
         print(test_full_data_sections)
 
@@ -303,12 +304,127 @@ def recbole_train_each_eval_all(model_name,
 
             # When calculate ItemCoverage metrics, we need to run this code for set item_nums in eval_collector.
             trainer.eval_collector.data_collect(trainset)
-            
+
             # model evaluation
-            test_result = evaluate(trainer, testset) # bc is the trainer that was just feed new data
+            test_result = trainer.evaluate(testset) # test_result = evaluate_print_error_message(trainer, testset) # bc is the trainer that was just feed new data
             validate_and_save_picklefile(test_result,
                                         current_config['checkpoint_dir'],
                                         get_evaluation_results_filename(current_config['model'],
                                                                         current_dataset_name, 
                                                                         testset_name, 
-                                                                        filename_version))    
+                                                                        filename_version))   
+
+    # model_class = None
+    # if model_name=='BPR':
+    #     model_class = BPR
+    # elif model_name=='Pop':
+    #     model_class = Pop
+    # elif model_name=='NeuMF':
+    #     model_class = NeuMF
+    # elif model_name=='ItemKNN':
+    #     model_class = ItemKNN
+    # else:
+    #     raise Exception('Model name not expected! Current options are [BPR, Pop, NeuMF, ItemKNN]')  
+
+
+    # base_dataset_name = base_filename+'_'+specs_str
+
+    # for part in model_versions_to_train:
+    #     print('\n\n'+part)
+        
+    #     # current data (ith part of the dataset) to feed the pre-trained model,
+    #     # the result is referred to as "model part i" or "current model"
+    #     current_dataset_name = base_dataset_name+part
+    #     current_checkpoint_dir = save_path+current_dataset_name
+
+    #     parameter_dict = {  'dataset': current_dataset_name+'.inter',
+    #                         'use_gpu':use_gpu,
+
+    #                         ## Environment settings https://recbole.io/docs/user_guide/config/environment_settings.html
+    #                         'seed':seed,
+    #                         'state':'INFO' if show_progress else 'ERROR', # ['INFO', 'DEBUG', 'WARNING', 'ERROR', 'CRITICAL']
+    #                         'data_path': save_path, # The path of input dataset.
+    #                         'save_dataset':save_dataset, 
+    #                         'checkpoint_dir':current_checkpoint_dir, # The path to save checkpoint file.
+    #                         'show_progress': show_progress,
+    #                         'shuffle': shuffle,
+
+    #                         ## Data settings https://recbole.io/docs/user_guide/config/data_settings.html
+    #                         'load_col': {'inter': ['user_id', 'item_id', 'timestamp']},
+    #                         # 'user_inter_num_interval':'[1,inf)',
+    #                         'benchmark_filename': benchmark_filename,
+                            
+    #                         ## Training settings https://recbole.io/docs/user_guide/config/training_settings.html
+    #                         # 'train_neg_sample_args': TRAIN_NEG_SAMPLE_ARGS,
+    #                         'knn_method':knn_method,
+
+    #                         ## Evaluation settings https://recbole.io/docs/user_guide/config/evaluation_settings.html
+    #                         'eval_args': eval_args,
+    #                         'metrics': metrics, 
+    #                         'topk':ks,
+    #                         'valid_metric':valid_metric          
+    #                     }
+
+
+    #     # current_config,current_logger,current_dataset,current_train_data, current_valid_data, current_test_data
+    #     current_config,\
+    #         current_logger, _,\
+    #             current_train_data,\
+    #                 current_valid_data,\
+    #                     current_test_data = setup_config_and_dataset(model_name,
+    #                                                                 current_dataset_name,
+    #                                                                 parameter_dict)
+
+    #     # model loading and initialization
+    #     current_model = model_class(current_config, current_train_data.dataset).to(current_config['device'])
+    #     current_logger.info(current_model)
+
+
+    #     # trainer loading and initialization
+    #     trainer = get_trainer(current_config['MODEL_TYPE'], current_config['model'])(current_config, current_model)
+        
+        
+    #     # model training
+    #     best_valid_score, best_valid_result = trainer.fit(current_train_data, current_valid_data)
+    #     print('\n\nTraining best results')
+    #     print('best_valid_score: ', best_valid_score)
+    #     print('best_valid_result: ', best_valid_result)
+
+
+    #     # main diagonal eval
+    #     test_result = evaluate(trainer, current_test_data)
+    #     validate_and_save_picklefile(test_result,
+    #                                 current_config['checkpoint_dir'], 
+    #                                 get_evaluation_results_filename(current_config['model'], 
+    #                                                                 current_dataset_name, 
+    #                                                                 part, 
+    #                                                                 filename_version))
+
+
+    #     # evaluate in all testsets
+    #     test_full_data_sections = get_test_full_data_sections_with_names(model_version=part,
+    #                                             base_dataset_name=base_dataset_name,
+    #                                             models_versions=model_versions_to_evaluate)
+        
+    #     test_full_data_sections = test_full_data_sections if part_shift_incl else test_full_data_sections[:-1]
+    #     print(test_full_data_sections)
+
+    #     for testset_name in test_full_data_sections:
+
+    #         _,_,\
+    #             _,trainset,_,\
+    #                 testset = setup_config_and_dataset(model_name,
+    #                                                     testset_name,
+    #                                                     parameter_dict)
+
+    #         # When calculate ItemCoverage metrics, we need to run this code for set item_nums in eval_collector.
+    #         trainer.eval_collector.data_collect(trainset)
+            
+    #         # model evaluation
+    #         test_result = evaluate(trainer, testset) # bc is the trainer that was just feed new data
+    #         validate_and_save_picklefile(test_result,
+    #                                     current_config['checkpoint_dir'],
+    #                                     get_evaluation_results_filename(current_config['model'],
+    #                                                                     current_dataset_name, 
+    #                                                                     testset_name, 
+    #                                                                     filename_version))    
