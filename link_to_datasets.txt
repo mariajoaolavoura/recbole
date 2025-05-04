@@ -1,0 +1,11 @@
+Place the 'processed_datasets' folder in the same directory as the notebooks to be run
+
+The directory should look like:
+	processed_datasets/*
+	utils/*
+	28_Goodreads_pipeline-jrc-3_run_experiments-PT_RD.50.ipynb
+
+
+Link to the datasets:
+https://drive.google.com/drive/folders/1t0wofRqW0S3T6p1r2_ZGsUDstibEt6GW?usp=sharing
+
