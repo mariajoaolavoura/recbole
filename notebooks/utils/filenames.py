@@ -18,4 +18,5 @@ def get_train_filepath(checkpoint_dir, datasetname):
     return checkpoint_dir+'/'+datasetname+'.train'+'.csv'
 
 def get_user_rec_filepath(checkpoint_dir,algo, test_part):
-    return checkpoint_dir+'/'+algo+'_user_rec_info_test'+test_part+'.pkl'
+    return checkpoint_dir+'/'+algo+'_user_rec_info_test'+test_part+'.csv'
+            # ,\checkpoint_dir+'/'+algo+'_rec_ext_item_ids_test'+test_part+'.pkl'
