@@ -36,6 +36,14 @@ def get_evaluation_results_filename(model_name, model_part, section, filename_ve
     else:
         return model_name+'_evalres_model_full_section_'+section[-3:]+filename_version
 
+def get_diversity_results_filename(model_name, model_part, section, filename_version=''):
+    if section == 'diagonal' and model_part is None:
+        return model_name+'_diverres_diagonal'+filename_version
+    elif model_part[-3:][:2] == 'pt': 
+        return model_name+'_diverres_model_'+model_part[-3:]+'_section_'+section[-3:]+filename_version
+    else:
+        return model_name+'_diverres_model_full_section_'+section[-3:]+filename_version
+
 
 def get_test_full_data_sections(model_version:str, 
                             models_versions=['_pt1', '_pt2', '_pt3', '']):
