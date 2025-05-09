@@ -7,6 +7,7 @@ from .file_utils import *
 from .train_evaluate import *
 from .filenames import *
 from .recommendation_utils import *
+from .popularity_inequality import *
 
 
 from .deprecated.model_utils import *
