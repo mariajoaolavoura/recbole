@@ -23,6 +23,8 @@ def interval_list_as_timestamp(split_intervals):
 
 def get_user_recommendations_per_interval_df( model_versions_to_train,
                                               intervals_to_evaluate,
+                                              split_intervals_dict,
+                                              part_to_interval_map,
                                               algorithms,
                                               save_path, 
                                               base_filename, 
@@ -68,7 +70,7 @@ def get_user_recommendations_per_interval_df( model_versions_to_train,
             train_filepath = get_train_filepath(test_checkpoint_dir, test_datasetname)
             trainset = pd.read_csv(train_filepath)
             # print(testset.shape, testset_reclists.shape, trainset.shape)
-            _tt = trainset.loc[trainset['user_id'].isin(testset['user_id'].unique()), :]
+            _tt = trainset.loc[trainset['user_id'].isin(testset['user_id'].unique()), :].copy()
             # print(testset.shape, testset_reclists.shape, trainset.shape, _tt.shape)
             # Group by user_id and get unique items as list
             user_profile = _tt.groupby('user_id')['item_id'].unique().reset_index()
@@ -82,22 +84,25 @@ def get_user_recommendations_per_interval_df( model_versions_to_train,
 
                 testset_reclists = pd.DataFrame()
 
-                all_recfilenames = filenames_df.loc[(filenames_df.part==test_part) & (filenames_df.algorithm==algo),'name']
+                all_recfilenames = filenames_df.loc[(filenames_df.part==test_part) & (filenames_df.algorithm==algo),'name'].copy()
+                if all_recfilenames.shape[0]==0:
+                    continue
+
                 for recfilename in all_recfilenames:                
                     rec_lists = load_picklefile(rec_folderpath+recfilename)
                     rec_lists = rec_lists.tolist() if hasattr(rec_lists, 'tolist') else rec_lists
                     n_reclists = len(rec_lists)
-
-                    batch = testset[:n_reclists]   
+                    batch = testset[:n_reclists].copy()   
 
                     testset_reclists = pd.concat( [ testset_reclists,\
                                                     pd.concat([batch, pd.DataFrame({'rec_list': rec_lists})], axis=1)],
                                                 axis=0, 
                                                 ignore_index=True)
-                # print(testset_reclists.head())  
-                # print(testset.shape, testset_reclists.shape)       
+                # print('testset_reclists:\n',testset_reclists.head())  
+                # print('testset: ',testset.shape, 'testset_reclists:',testset_reclists.shape)       
             
-
+                # print('user_profile:\n',user_profile.head())        
+                
                 user_rec_info_df = pd.merge(testset_reclists, user_profile[['user_id', 'profile_items']], on='user_id', how='left')
                 # print('user_rec_info_df\n', user_rec_info_df.head())   
                 # print(testset.shape, testset_reclists.shape, trainset.shape, _tt.shape, user_profile.shape, user_rec_info_df.shape)  

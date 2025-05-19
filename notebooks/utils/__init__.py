@@ -8,6 +8,7 @@ from .train_evaluate import *
 from .filenames import *
 from .recommendation_utils import *
 from .popularity_inequality import *
+from .diversity_utils import *
 
 
 from .deprecated.model_utils import *

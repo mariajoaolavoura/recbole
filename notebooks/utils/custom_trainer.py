@@ -275,7 +275,7 @@ class CustomTrainer(Trainer):
                             'RecExtItemIds_'+self.config['model']+\
                                                             '_test_'+pti+\
                                                                 '_batch_'+str(batch_idx)+\
-                                                                    '_'+str(time())+'.pkl'
+                                                                    '_'+str(round(time(), 4))+'.pkl'
                                                                     # '_'+str(datetime.datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S'))+'.pkl'
              
              
