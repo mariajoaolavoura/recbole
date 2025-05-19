@@ -112,7 +112,8 @@ def calculate_popularity_inequality(algorithms,
                 
                 active_users_df.loc[:, 'popularity_inequality@reclist'] = pi_rec['popularityinequality']
                 active_users_df.loc[:, 'popularity_inequality@userprofile'] = pi_profile['popularityinequality']  
-                active_users_df.loc[:, 'popularity_inequality_delta'] = abs(active_users_df.loc[:, 'popularity_inequality@userprofile'] - active_users_df.loc[:, 'popularity_inequality@reclist'])    
+                # active_users_df.loc[:, 'popularity_inequality_delta'] = abs(active_users_df.loc[:, 'popularity_inequality@userprofile'] - active_users_df.loc[:, 'popularity_inequality@reclist'])    
+                active_users_df.loc[:, 'popularity_inequality_delta'] = active_users_df.loc[:, 'popularity_inequality@userprofile'] - active_users_df.loc[:, 'popularity_inequality@reclist']
                 active_users_df.to_csv(get_user_rec_filepath(checkpoint_dir, algo, test_part, specs_str='_au'), index=False)
 
 

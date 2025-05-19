@@ -90,8 +90,8 @@ class PopularityInequality(AbstractMetric):
                 continue
 
             # Compute pairwise absolute differences using broadcasting
-            # diff_matrix = np.abs(pop_rec_items[:, None] - pop_rec_items[None, :])
-            diff_matrix = pop_rec_items[:, None] - pop_rec_items[None, :]
+            diff_matrix = np.abs(pop_rec_items[:, None] - pop_rec_items[None, :])
+            # diff_matrix = pop_rec_items[:, None] - pop_rec_items[None, :]
             gini = diff_matrix.sum() / (2 * n * pop_rec_items.sum())
 
             gini_index_list.append(gini)
